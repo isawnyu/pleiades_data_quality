@@ -37,3 +37,6 @@ class TestPleiadesPlaceMetrics:
 
     def test_rough(self):
         assert not (self.p.rough)
+
+    def test_unlocated(self):
+        assert not (self.p.unlocated)

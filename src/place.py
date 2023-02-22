@@ -43,3 +43,7 @@ class PleiadesPlace:
     @property
     def title(self):
         return self.data["title"]
+
+    @property
+    def unlocated(self):
+        return "unlocated" in self.data["placeTypes"]
