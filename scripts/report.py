@@ -51,6 +51,9 @@ issues = {
     "missing_accuracy": set(),
     "bad_osm_way": set(),
     "bad_place_type": set(),
+    "question_mark_titles": set(),
+    "names_romanized_only": set(),
+    "missing_modern_name": set(),
 }
 accuracy_details = dict()
 DEPRECATED_PLACE_TYPES = {
@@ -63,6 +66,7 @@ DEPRECATED_PLACE_TYPES = {
     "plaza",
 }
 place_type_details = dict()
+problems = dict()
 
 
 def set_default(obj):
@@ -75,22 +79,45 @@ def evaluate(p):
     global issues
     global accuracy_details
     global place_type_details
+    global problems
 
+    pid = p.id
+    problem = False
+    if "?" in p.title:
+        issues["question_mark_titles"].add(pid)
+        problem = True
     if p.rough and not p.unlocated:
-        issues["rough_not_unlocated"].add(p.id)
+        issues["rough_not_unlocated"].add(pid)
+        problem = True
     if p.precise:
         try:
             if p.accuracy_min >= ACCURACY_THRESHOLD:
-                issues["poor_accuracy"].add(p.id)
-                accuracy_details[p.id] = p.accuracy_min
+                issues["poor_accuracy"].add(pid)
+                accuracy_details[pid] = p.accuracy_min
+                problem = True
         except TypeError:
-            issues["missing_accuracy"].add(p.id)
+            issues["missing_accuracy"].add(pid)
+            problem = True
         if p.bad_osm_ways:
-            issues["bad_osm_way"].add(p.id)
+            issues["bad_osm_way"].add(pid)
+            problem = True
     bad_place_types = DEPRECATED_PLACE_TYPES.intersection(p.place_types)
     if bad_place_types:
-        issues["bad_place_type"].add(p.id)
-        place_type_details[p.id] = list(bad_place_types)
+        issues["bad_place_type"].add(pid)
+        place_type_details[pid] = list(bad_place_types)
+        problem = True
+    names_romanized_only = p.names_romanized_only
+    if names_romanized_only:
+        issues["names_romanized_only"].add(pid)
+        problem = True
+    if p.name_count > 0 and not p.names_modern:
+        issues["missing_modern_name"].add(pid)
+        problem = True
+
+    if problem:
+        problems[pid] = p
+    else:
+        del p
 
 
 def main(**kwargs):
@@ -109,6 +136,8 @@ def main(**kwargs):
         print(f"{k}: {len(v)}")
     dest_path = Path(kwargs["destdir"]).expanduser().resolve()
     dest_path.mkdir(parents=True, exist_ok=True)
+    issues["places"] = {pid: {"title": p.title} for pid, p in problems.items()}
+    print(f"Total problem place count: {len(problems)}")
     with open(dest_path / "issues.json", "w", encoding="utf-8") as fp:
         json.dump(issues, fp, default=set_default, indent=4, ensure_ascii=False)
     del fp

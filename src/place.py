@@ -62,6 +62,27 @@ class PleiadesPlace:
         return self.data["id"]
 
     @property
+    def names(self) -> list:
+        return self.data["names"]
+
+    @property
+    def names_romanized_only(self) -> list:
+        return [n for n in self.data["names"] if n["attested"]]
+
+    @property
+    def name_count(self) -> int:
+        return len(self.data["names"])
+
+    @property
+    def names_modern(self) -> list:
+        modnames = list()
+        for n in self.data["names"]:
+            if n["start"] is not None:
+                if n["start"] >= 1500:
+                    modnames.append(n)
+        return modnames
+
+    @property
     def place_types(self) -> set:
         return set(self.data["placeTypes"])
 
