@@ -27,5 +27,19 @@ class PleiadesPlace:
         del fp
 
     @property
+    def feature_count(self) -> int:
+        return len([f for f in self.data["features"]])
+
+    @property
+    def precise(self) -> bool:
+        vals = {f["properties"]["location_precision"] for f in self.data["features"]}
+        return vals == {"precise"}
+
+    @property
+    def rough(self) -> bool:
+        vals = {f["properties"]["location_precision"] for f in self.data["features"]}
+        return vals == {"rough"}
+
+    @property
     def title(self):
         return self.data["title"]
