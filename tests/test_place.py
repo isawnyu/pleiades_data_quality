@@ -8,10 +8,19 @@
 """
 Test the pleiades_data_quality.place module
 """
-
+import logging
+from pathlib import Path
 from place import PleiadesPlace
+
+logger = logging.getLogger(__name__)
 
 
 class TestPleiadesPlace:
     def test_init(self):
         PleiadesPlace()
+
+    def test_load_from_file(self):
+        fn = "753612858.json"
+        filepath = Path(f"tests/data/{fn}").resolve()
+        p = PleiadesPlace(filepath)
+        assert p.title == "Porta Vesuvio"

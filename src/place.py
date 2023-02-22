@@ -8,11 +8,24 @@
 Read and interrogate a Pleiades place
 """
 
+import json
 import logging
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 
 class PleiadesPlace:
-    def __init__(self):
-        pass
+    def __init__(self, file_path: Path = None):
+        if isinstance(file_path, Path):
+            self.load_from_file(file_path)
+
+    def load_from_file(self, file_path: Path):
+        """Load place data from a Pleiades JSON file on the filesystem"""
+        with open(file_path, "r", encoding="utf-8") as fp:
+            self.data = json.load(fp)
+        del fp
+
+    @property
+    def title(self):
+        return self.data["title"]
