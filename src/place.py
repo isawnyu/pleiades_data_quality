@@ -36,7 +36,11 @@ class PleiadesPlace:
 
     @property
     def accuracy_min(self) -> float:
-        return min([l["accuracy_value"] for l in self.data["locations"]])
+        try:
+            return min([l["accuracy_value"] for l in self.data["locations"]])
+        except ValueError:
+            logger.error(f"bad or missing accuracy values for {self.data['id']}")
+            return 0.0
 
     @property
     def bad_osm_ways(self) -> bool:
@@ -54,8 +58,12 @@ class PleiadesPlace:
         return len([f for f in self.data["features"]])
 
     @property
+    def id(self) -> str:
+        return self.data["id"]
+
+    @property
     def place_types(self) -> set:
-        return {self.data["placeTypes"]}
+        return set(self.data["placeTypes"])
 
     @property
     def precise(self) -> bool:
