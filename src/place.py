@@ -27,6 +27,18 @@ class PleiadesPlace:
         del fp
 
     @property
+    def accuracies(self) -> set:
+        return {l["accuracy_value"] for l in self.data["locations"]}
+
+    @property
+    def accuracy_max(self) -> float:
+        return max([l["accuracy_value"] for l in self.data["locations"]])
+
+    @property
+    def accuracy_min(self) -> float:
+        return min([l["accuracy_value"] for l in self.data["locations"]])
+
+    @property
     def feature_count(self) -> int:
         return len([f for f in self.data["features"]])
 

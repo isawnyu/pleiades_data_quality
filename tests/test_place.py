@@ -29,6 +29,15 @@ class TestPleiadesPlaceInit:
 class TestPleiadesPlaceMetrics:
     p = PleiadesPlace(filepath)
 
+    def test_accuracies(self):
+        assert {20.0} == self.p.accuracies
+
+    def test_accuracy_max(self):
+        assert 20.0 == self.p.accuracy_max
+
+    def test_accuracy_min(self):
+        assert 20.0 == self.p.accuracy_min
+
     def test_feature_count(self):
         assert 1 == self.p.feature_count
 
