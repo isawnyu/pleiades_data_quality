@@ -38,6 +38,9 @@ class TestPleiadesPlaceMetrics:
     def test_accuracy_min(self):
         assert 20.0 == self.p.accuracy_min
 
+    def test_bad_osm_ways(self):
+        assert not (self.p.bad_osm_ways)
+
     def test_feature_count(self):
         assert 1 == self.p.feature_count
 

@@ -39,8 +39,23 @@ class PleiadesPlace:
         return min([l["accuracy_value"] for l in self.data["locations"]])
 
     @property
+    def bad_osm_ways(self) -> bool:
+        return 0 < len(
+            [
+                l
+                for l in self.data["locations"]
+                if l["provenance"].startswith("OpenStreetMap (Way")
+                and l["geometry"]["type"] == "Point"
+            ]
+        )
+
+    @property
     def feature_count(self) -> int:
         return len([f for f in self.data["features"]])
+
+    @property
+    def place_types(self) -> set:
+        return {self.data["placeTypes"]}
 
     @property
     def precise(self) -> bool:
