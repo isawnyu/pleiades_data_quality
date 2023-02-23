@@ -11,6 +11,7 @@ Read and interrogate a Pleiades place
 import json
 import logging
 from pathlib import Path
+from pprint import pformat
 
 logger = logging.getLogger(__name__)
 
@@ -66,10 +67,6 @@ class PleiadesPlace:
         return self.data["names"]
 
     @property
-    def names_romanized_only(self) -> list:
-        return [n for n in self.data["names"] if n["attested"]]
-
-    @property
     def name_count(self) -> int:
         return len(self.data["names"])
 
@@ -81,6 +78,10 @@ class PleiadesPlace:
                 if n["start"] >= 1500:
                     modnames.append(n)
         return modnames
+
+    @property
+    def names_romanized_only(self) -> list:
+        return [n for n in self.data["names"] if not n["attested"]]
 
     @property
     def place_types(self) -> set:

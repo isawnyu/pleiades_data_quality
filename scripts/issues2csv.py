@@ -63,6 +63,8 @@ def main(**kwargs):
             these_fieldnames.extend(["minimum", "maximum"])
         elif k == "bad_place_type":
             these_fieldnames.append("place_types")
+        elif k == "names_romanized_only":
+            these_fieldnames.append("names")
         where = ipath.parent / f"{k}.csv"
         rows = list()
         for pid in v:
@@ -78,6 +80,13 @@ def main(**kwargs):
                 rows[-1]["maximum"] = issues["places"][pid]["accuracy_max"]
             elif k == "bad_place_type":
                 rows[-1]["place_types"] = issues["places"][pid]["place_types"]
+            elif k == "names_romanized_only":
+                rows[-1]["names"] = "|".join(
+                    [
+                        f"{n[0]}:{n[1]}:{'/'.join(n[2])}"
+                        for n in issues["places"][pid]["names"]
+                    ]
+                )
         rows = sorted(rows, key=lambda x: int(x["pid"]))
         with open(where, "w", newline="", encoding="utf-8") as fp:
             logger.debug(f"these_fieldnames: {pformat(these_fieldnames, indent=4)}")

@@ -65,6 +65,7 @@ DEPRECATED_PLACE_TYPES = {
     "province",
     "plaza",
 }
+names_details = dict()
 place_type_details = dict()
 problems = dict()
 
@@ -112,6 +113,14 @@ def evaluate(p):
     names_romanized_only = p.names_romanized_only
     if names_romanized_only:
         issues["names_romanized_only"].add(pid)
+        names_details[pid] = [
+            (
+                n["attested"],
+                n["language"],
+                [r.strip() for r in n["romanized"].split(",")],
+            )
+            for n in p.names
+        ]
         problem = True
     if p.name_count > 0 and not p.names_modern:
         issues["missing_modern_name"].add(pid)
@@ -129,7 +138,7 @@ def main(**kwargs):
     """
     # logger = logging.getLogger(sys._getframe().f_code.co_name)
     src_path = Path(kwargs["srcdir"]).expanduser().resolve()
-    logger.info("Crawling for Pleiades JSON: {src_path}")
+    logger.info(f"Crawling for Pleiades JSON: {src_path}")
     for (root, dirs, files) in os.walk(src_path):
         for f in files:
             if f.endswith(".json"):
@@ -143,7 +152,9 @@ def main(**kwargs):
     for pid, d in accuracy_details.items():
         issues["places"][pid] = issues["places"][pid] | d
     for pid, v in place_type_details.items():
-        issues["places"][pid]["place_types"] = "|".join(v)
+        issues["places"][pid]["place_types"] = v
+    for pid, v in names_details.items():
+        issues["places"][pid]["names"] = v
     print(f"Total problem place count: {len(problems)}")
     with open(dest_path / "issues.json", "w", encoding="utf-8") as fp:
         json.dump(issues, fp, default=set_default, indent=4, ensure_ascii=False)
