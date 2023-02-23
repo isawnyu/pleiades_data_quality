@@ -59,21 +59,26 @@ accuracy_details = dict()
 DEPRECATED_PLACE_TYPES = {
     "church",
     "fort",
+    "labeled-feature",
     "mine",
+    "numbered feature",
     "plaza",
     "province",
     "temple",
     "unknown",
     "wall",
-}  # these are term IDs, not the full terms (e.g. "church" == "church or monastery")
+}  # these are term IDs, not the full terms (e.g. "church" here meant "church or monastery" on BAtlas map)
 names_details = dict()
 place_type_details = dict()
 problems = dict()
+summary = {"place_count": 0, "problem_count": 0}
+for k in issues.keys():
+    summary[k] = 0
 
 
 def set_default(obj):
     if isinstance(obj, set):
-        return list(obj)
+        return sorted(list(obj))
     raise TypeError
 
 
@@ -82,6 +87,7 @@ def evaluate(p):
     global accuracy_details
     global place_type_details
     global problems
+    global summary
 
     pid = p.id
     problem = False
@@ -138,6 +144,8 @@ def main(**kwargs):
     """
     main function
     """
+    global summary
+
     # logger = logging.getLogger(sys._getframe().f_code.co_name)
     src_path = Path(kwargs["srcdir"]).expanduser().resolve()
     logger.info(f"Crawling for Pleiades JSON: {src_path}")
@@ -145,9 +153,11 @@ def main(**kwargs):
         for f in files:
             if f.endswith(".json"):
                 p = PleiadesPlace(Path(root) / f)
+                summary["place_count"] += 1
                 evaluate(p)
     for k, v in issues.items():
         print(f"{k}: {len(v)}")
+        summary[k] = len(v)
     dest_path = Path(kwargs["destdir"]).expanduser().resolve()
     dest_path.mkdir(parents=True, exist_ok=True)
     issues["places"] = {pid: {"title": p.title} for pid, p in problems.items()}
@@ -158,6 +168,8 @@ def main(**kwargs):
     for pid, v in names_details.items():
         issues["places"][pid]["names"] = v
     print(f"Total problem place count: {len(problems)}")
+    summary["problem_count"] = len(problems)
+    issues["summary"] = summary
     with open(dest_path / "issues.json", "w", encoding="utf-8") as fp:
         json.dump(issues, fp, default=set_default, indent=4, ensure_ascii=False)
     del fp
