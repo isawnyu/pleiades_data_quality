@@ -1,14 +1,25 @@
-⌘ python scripts/report.py ../pleiades.datasets/data/json/ ~/scratch/data_quality
-rough_not_unlocated: 4174
-poor_accuracy: 9111
-missing_accuracy: 624
-bad_osm_way: 1721
-bad_place_type: 3517
-question_mark_titles: 1440
-names_romanized_only: 5123
-missing_modern_name: 20554
-Total problem place count: 33013
-Wrote report data to /Users/paregorios/scratch/data_quality.
+# pleiades_data_quality
+
+Generate reporting data on select quality-related aspects of the [Pleiades gazetteer](https://pleiades.stoa.org) dataset.
+
+This code expects to be run against Pleiades JSON data such as that found in https://github.com/isawnyu/pleiades.datasets/tree/main/data/json and produces report output such as that found in https://github.com/isawnyu/pleiades.datasets/tree/main/data/data_quality
+
+## how to run it:
+
+### generate reporting data, all of which is saved to issues.json
+
+```
+python scripts/report.py ../pleiades.datasets/data/json/ ../pleiades.datasets/data/data_quality/
+```
+
+### create CSV files containing issue-specific reporting data pulled from issues.json
+
+```
+python scripts/issues2csv.py ../pleiades.datasets/data/data_quality/issues.json
+```
+
+## quick tip
+
+To get an overview of how many issues there are in any given category, see the "summary" key in issues.json.
 
 
-Next step is to write out CSV with details for each category of error so we can set up spreadsheets to track group effort.
