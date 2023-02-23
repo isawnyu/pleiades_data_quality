@@ -93,7 +93,10 @@ def evaluate(p):
         try:
             if p.accuracy_min >= ACCURACY_THRESHOLD:
                 issues["poor_accuracy"].add(pid)
-                accuracy_details[pid] = p.accuracy_min
+                accuracy_details[pid] = {
+                    "accuracy_min": p.accuracy_min,
+                    "accuracy_max": p.accuracy_max,
+                }
                 problem = True
         except TypeError:
             issues["missing_accuracy"].add(pid)
@@ -137,6 +140,10 @@ def main(**kwargs):
     dest_path = Path(kwargs["destdir"]).expanduser().resolve()
     dest_path.mkdir(parents=True, exist_ok=True)
     issues["places"] = {pid: {"title": p.title} for pid, p in problems.items()}
+    for pid, d in accuracy_details.items():
+        issues["places"][pid] = issues["places"][pid] | d
+    for pid, v in place_type_details.items():
+        issues["places"][pid]["place_types"] = "|".join(v)
     print(f"Total problem place count: {len(problems)}")
     with open(dest_path / "issues.json", "w", encoding="utf-8") as fp:
         json.dump(issues, fp, default=set_default, indent=4, ensure_ascii=False)
