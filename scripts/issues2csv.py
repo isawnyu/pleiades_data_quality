@@ -61,7 +61,7 @@ def main(**kwargs):
         these_fieldnames = deepcopy(fieldnames)
         if k == "poor_accuracy":
             these_fieldnames.extend(["minimum", "maximum"])
-        elif k == "bad_place_type":
+        elif k in ["rough_not_unlocated", "bad_place_type"]:
             these_fieldnames.append("place_types")
         elif k == "names_romanized_only":
             these_fieldnames.append("names")
@@ -78,8 +78,8 @@ def main(**kwargs):
             if k == "poor_accuracy":
                 rows[-1]["minimum"] = issues["places"][pid]["accuracy_min"]
                 rows[-1]["maximum"] = issues["places"][pid]["accuracy_max"]
-            elif k == "bad_place_type":
-                rows[-1]["place_types"] = issues["places"][pid]["place_types"]
+            elif k in ["rough_not_unlocated", "bad_place_type"]:
+                rows[-1]["place_types"] = "|".join(issues["places"][pid]["place_types"])
             elif k == "names_romanized_only":
                 rows[-1]["names"] = "|".join(
                     [

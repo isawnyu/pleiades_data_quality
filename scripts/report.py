@@ -57,14 +57,15 @@ issues = {
 }
 accuracy_details = dict()
 DEPRECATED_PLACE_TYPES = {
-    "wall",
-    "mine",
     "church",
-    "temple",
     "fort",
-    "province",
+    "mine",
     "plaza",
-}
+    "province",
+    "temple",
+    "unknown",
+    "wall",
+}  # these are term IDs, not the full terms (e.g. "church" == "church or monastery")
 names_details = dict()
 place_type_details = dict()
 problems = dict()
@@ -88,6 +89,7 @@ def evaluate(p):
         issues["question_mark_titles"].add(pid)
         problem = True
     if p.rough and not p.unlocated:
+        place_type_details[pid] = list(p.place_types)
         issues["rough_not_unlocated"].add(pid)
         problem = True
     if p.precise:
@@ -108,7 +110,7 @@ def evaluate(p):
     bad_place_types = DEPRECATED_PLACE_TYPES.intersection(p.place_types)
     if bad_place_types:
         issues["bad_place_type"].add(pid)
-        place_type_details[pid] = list(bad_place_types)
+        place_type_details[pid] = list(p.place_types)
         problem = True
     names_romanized_only = p.names_romanized_only
     if names_romanized_only:
