@@ -56,7 +56,7 @@ def main(**kwargs):
     del fp
     fieldnames = ["pid", "uri", "title"]
     for k, v in issues.items():
-        if k == "places":
+        if k in ["places", "summary"]:
             continue
         these_fieldnames = deepcopy(fieldnames)
         if k == "poor_accuracy":
