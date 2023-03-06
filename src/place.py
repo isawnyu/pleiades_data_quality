@@ -54,6 +54,14 @@ class PleiadesPlace:
             ]
         )
 
+    def get_bad_osm_way_ids(self):
+        return [
+            l["id"]
+            for l in self.data["locations"]
+            if l["provenance"].startswith("OpenStreetMap (Way")
+            and l["geometry"]["type"] == "Point"
+        ]
+
     @property
     def feature_count(self) -> int:
         return len([f for f in self.data["features"]])

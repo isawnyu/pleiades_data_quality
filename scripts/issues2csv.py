@@ -65,6 +65,8 @@ def main(**kwargs):
             these_fieldnames.append("place_types")
         elif k == "names_romanized_only":
             these_fieldnames.append("names")
+        elif k == "bad_osm_way":
+            these_fieldnames.append("osm_way_ids")
         where = ipath.parent / f"{k}.csv"
         rows = list()
         for pid in v:
@@ -87,6 +89,8 @@ def main(**kwargs):
                         for n in issues["places"][pid]["names"]
                     ]
                 )
+            elif k == "bad_osm_way":
+                rows[-1]["osm_way_ids"] = "|".join(issues["places"][pid]["osm_way_ids"])
         rows = sorted(rows, key=lambda x: int(x["pid"]))
         with open(where, "w", newline="", encoding="utf-8") as fp:
             logger.debug(f"these_fieldnames: {pformat(these_fieldnames, indent=4)}")

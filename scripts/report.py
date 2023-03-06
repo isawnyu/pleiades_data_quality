@@ -56,6 +56,7 @@ issues = {
     "missing_modern_name": set(),
 }
 accuracy_details = dict()
+bad_osm_way_details = dict()
 DEPRECATED_PLACE_TYPES = {
     "church",
     "fort",
@@ -112,6 +113,7 @@ def evaluate(p):
             problem = True
         if p.bad_osm_ways:
             issues["bad_osm_way"].add(pid)
+            bad_osm_way_details[pid] = p.get_bad_osm_way_ids()
             problem = True
     bad_place_types = DEPRECATED_PLACE_TYPES.intersection(p.place_types)
     if bad_place_types:
@@ -167,6 +169,8 @@ def main(**kwargs):
         issues["places"][pid]["place_types"] = v
     for pid, v in names_details.items():
         issues["places"][pid]["names"] = v
+    for pid, v in bad_osm_way_details.items():
+        issues["places"][pid]["osm_way_ids"] = v
     print(f"Total problem place count: {len(problems)}")
     summary["problem_count"] = len(problems)
     issues["summary"] = summary
