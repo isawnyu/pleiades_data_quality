@@ -10,6 +10,7 @@ Report on problems in Pleiades data
 """
 
 from airtight.cli import configure_commandline
+from datetime import date
 import json
 import logging
 import os
@@ -151,14 +152,14 @@ def main(**kwargs):
     # logger = logging.getLogger(sys._getframe().f_code.co_name)
     src_path = Path(kwargs["srcdir"]).expanduser().resolve()
     logger.info(f"Crawling for Pleiades JSON: {src_path}")
-    for (root, dirs, files) in os.walk(src_path):
+    for root, dirs, files in os.walk(src_path):
         for f in files:
             if f.endswith(".json"):
                 p = PleiadesPlace(Path(root) / f)
                 summary["place_count"] += 1
                 evaluate(p)
     for k, v in issues.items():
-        print(f"{k}: {len(v)}")
+        logger.info(f"{k}: {len(v)}")
         summary[k] = len(v)
     dest_path = Path(kwargs["destdir"]).expanduser().resolve()
     dest_path.mkdir(parents=True, exist_ok=True)
@@ -171,13 +172,29 @@ def main(**kwargs):
         issues["places"][pid]["names"] = v
     for pid, v in bad_osm_way_details.items():
         issues["places"][pid]["osm_way_ids"] = v
-    print(f"Total problem place count: {len(problems)}")
+    logger.info(f"Total problem place count: {len(problems)}")
     summary["problem_count"] = len(problems)
     issues["summary"] = summary
     with open(dest_path / "issues.json", "w", encoding="utf-8") as fp:
         json.dump(issues, fp, default=set_default, indent=4, ensure_ascii=False)
     del fp
-    print(f"Wrote report data to {dest_path}.")
+    logger.info(f"Wrote report data to {dest_path}.")
+    msg = [
+        f"Pleiades Data Quality Report {date.today().isoformat()}\n",
+        f"{len(issues['rough_not_unlocated']):,} places with 'rough' precision (i.e., no specific geometry), but not marked 'unlocated'.",
+        f"{len(issues['poor_accuracy']):,} places whose locations have no horizontal accuracy smaller than {ACCURACY_THRESHOLD:,.0f} meters.",
+        f"{len(issues['missing_accuracy']):,} places whose locations have no associated accuracy value.",
+        f"{len(issues['bad_osm_way']):,} places whose locations include an OSM Way that has been incompletely imported as a Node.",
+        f"{len(issues['bad_place_type']):,} places that make use of a deprecated place type.",
+        f"{len(issues['question_mark_titles']):,} place titles that include a question mark.",
+        f"{len(issues['names_romanized_only']):,} names that only have values in the 'romanized' field (no 'attested' field value in original language and script).",
+        f"{len(issues['missing_modern_name']):,} places that have no assigned 'modern name'.",
+    ]
+    print(" ".join(msg[1:]))
+    print("\n")
+    print("-" * 78)
+    print("\n")
+    print("\n".join([(s, f"- {s}")[i > 0] for i, s in enumerate(msg)]))
 
 
 if __name__ == "__main__":
