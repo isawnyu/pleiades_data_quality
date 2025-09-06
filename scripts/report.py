@@ -85,6 +85,10 @@ def set_default(obj):
 
 
 def evaluate(p):
+    """
+    Evaluate a PleiadesPlace instance for problems, updating the
+    appropriate global variables as needed.
+    """
     global issues
     global accuracy_details
     global place_type_details
@@ -93,14 +97,20 @@ def evaluate(p):
 
     pid = p.id
     problem = False
+
+    # question mark in title
     if "?" in p.title:
         issues["question_mark_titles"].add(pid)
         problem = True
+
+    # rough but not unlocated
     if p.rough and not p.unlocated:
         place_type_details[pid] = sorted(list(p.place_types))
         issues["rough_not_unlocated"].add(pid)
         problem = True
+
     if p.precise:
+        # precise but minimum accuracy is above threshold
         try:
             if p.accuracy_min >= ACCURACY_THRESHOLD:
                 issues["poor_accuracy"].add(pid)
@@ -112,15 +122,20 @@ def evaluate(p):
         except TypeError:
             issues["missing_accuracy"].add(pid)
             problem = True
+        # check for bad OSM ways (i.e., only have point geometry)
         if p.bad_osm_ways:
             issues["bad_osm_way"].add(pid)
             bad_osm_way_details[pid] = p.get_bad_osm_way_ids()
             problem = True
+
+    # deprecated place types
     bad_place_types = DEPRECATED_PLACE_TYPES.intersection(p.place_types)
     if bad_place_types:
         issues["bad_place_type"].add(pid)
         place_type_details[pid] = sorted(list(p.place_types))
         problem = True
+
+    # names only in romanized form
     names_romanized_only = p.names_romanized_only
     if names_romanized_only:
         issues["names_romanized_only"].add(pid)
@@ -133,6 +148,8 @@ def evaluate(p):
             for n in p.names
         ]
         problem = True
+
+    # missing modern name
     if p.name_count > 0 and not p.names_modern:
         issues["missing_modern_name"].add(pid)
         problem = True
