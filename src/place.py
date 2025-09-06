@@ -120,6 +120,49 @@ class PleiadesPlace:
         return vals == {"precise"}
 
     @property
+    def references(self) -> list:
+        """Return the list of references for the place and its subordinate objects"""
+        pid = self.id
+        refs = [(pid, ref) for ref in self.data.get("references", [])]
+        for loc in self.data.get("locations", []):
+            refs.extend(
+                [(f"{pid}:loc:{loc['id']}", ref) for ref in loc.get("references", [])]
+            )
+        for name in self.data.get("names", []):
+            refs.extend(
+                [
+                    (f"{pid}:name:{name['id']}", ref)
+                    for ref in name.get("references", [])
+                ]
+            )
+        for conn in self.data.get("connections", []):
+            refs.extend(
+                [
+                    (f"{pid}:conn:{conn['id']}", ref)
+                    for ref in conn.get("references", [])
+                ]
+            )
+        return refs
+
+    @property
+    def references_with_zotero(self) -> list:
+        """Return a list of references that do have a Zotero URI in the bibliographicURI field"""
+        return [
+            (obj_id, ref)
+            for obj_id, ref in self.references
+            if ref["bibliographicURI"].startswith("https://www.zotero.org/")
+        ]
+
+    @property
+    def references_without_zotero(self) -> list:
+        """Return a list of references that do not have a Zotero URI in the bibliographicURI field"""
+        return [
+            (obj_id, ref)
+            for obj_id, ref in self.references
+            if not ref["bibliographicURI"].startswith("https://www.zotero.org/")
+        ]
+
+    @property
     def rough(self) -> bool:
         """Return True if all features have 'rough' location precision (i.e., none are precise)"""
         vals = {f["properties"]["location_precision"] for f in self.data["features"]}

@@ -55,6 +55,7 @@ issues = {
     "question_mark_titles": set(),
     "names_romanized_only": set(),
     "missing_modern_name": set(),
+    "references_without_zotero": set(),
 }
 accuracy_details = dict()
 bad_osm_way_details = dict()
@@ -72,6 +73,7 @@ DEPRECATED_PLACE_TYPES = {
 }  # these are term IDs, not the full terms (e.g. "church" here meant "church or monastery" on BAtlas map)
 names_details = dict()
 place_type_details = dict()
+references_details = dict()
 problems = dict()
 summary = {"place_count": 0, "problem_count": 0}
 for k in issues.keys():
@@ -93,6 +95,7 @@ def evaluate(p):
     global accuracy_details
     global place_type_details
     global problems
+    global references_details
     global summary
 
     pid = p.id
@@ -154,6 +157,18 @@ def evaluate(p):
         issues["missing_modern_name"].add(pid)
         problem = True
 
+    # references without Zotero URI
+    if p.references_without_zotero:
+        issues["references_without_zotero"].add(pid)
+        problem = True
+        try:
+            d = references_details[pid]
+        except KeyError:
+            references_details[pid] = dict()
+            d = references_details[pid]
+        d["without_zotero"] = p.references_without_zotero
+
+    # store problem place data
     if problem:
         problems[pid] = p
     else:
@@ -189,6 +204,8 @@ def main(**kwargs):
         issues["places"][pid]["names"] = v
     for pid, v in bad_osm_way_details.items():
         issues["places"][pid]["osm_way_ids"] = v
+    for pid, v in references_details.items():
+        issues["places"][pid]["references"] = v
     logger.info(f"Total problem place count: {len(problems)}")
     summary["problem_count"] = len(problems)
     issues["summary"] = summary
@@ -206,6 +223,7 @@ def main(**kwargs):
         f"{len(issues['question_mark_titles']):,} place titles that include a question mark.",
         f"{len(issues['names_romanized_only']):,} names that only have values in the 'romanized' field (no 'attested' field value in original language and script).",
         f"{len(issues['missing_modern_name']):,} places that have no assigned 'modern name'.",
+        f"{len(issues['references_without_zotero']):,} places that have at least one reference without a Zotero URI.",
     ]
     print(" ".join(msg[1:]))
     print("\n")

@@ -47,6 +47,20 @@ class TestPleiadesPlaceMetrics:
     def test_precise(self):
         assert self.p.precise
 
+    def test_references(self):
+        assert len(self.p.references) == 7
+
+    def test_references_with_zotero(self):
+        zotrefs = self.p.references_with_zotero
+        assert len(zotrefs) == 6
+
+    def test_references_without_zotero(self):
+        no_zotrefs = self.p.references_without_zotero
+        assert len(no_zotrefs) == 1
+        ref = no_zotrefs[0][1]
+        assert ref["bibliographicURI"] == ""
+        assert ref["accessURI"] == "http://www.openstreetmap.org/browse/node/317736807"
+
     def test_rough(self):
         assert not (self.p.rough)
 
