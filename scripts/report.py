@@ -56,6 +56,7 @@ issues = {
     "names_romanized_only": set(),
     "missing_modern_name": set(),
     "references_without_zotero": set(),
+    "references_with_invalid_zotero": set(),
 }
 accuracy_details = dict()
 bad_osm_way_details = dict()
@@ -168,6 +169,17 @@ def evaluate(p):
             d = references_details[pid]
         d["without_zotero"] = p.references_without_zotero
 
+    # references with invalid Zotero URI
+    if p.references_with_invalid_zotero:
+        issues["references_with_invalid_zotero"].add(pid)
+        problem = True
+        try:
+            d = references_details[pid]
+        except KeyError:
+            references_details[pid] = dict()
+            d = references_details[pid]
+        d["with_invalid_zotero"] = p.references_with_invalid_zotero
+
     # store problem place data
     if problem:
         problems[pid] = p
@@ -224,6 +236,7 @@ def main(**kwargs):
         f"{len(issues['names_romanized_only']):,} names that only have values in the 'romanized' field (no 'attested' field value in original language and script).",
         f"{len(issues['missing_modern_name']):,} places that have no assigned 'modern name'.",
         f"{len(issues['references_without_zotero']):,} places that have at least one reference without a Zotero URI.",
+        f"{len(issues['references_with_invalid_zotero']):,} places that have at least one reference with an invalid Zotero URI.",
     ]
     print(" ".join(msg[1:]))
     print("\n")

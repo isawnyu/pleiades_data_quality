@@ -12,8 +12,14 @@ import json
 import logging
 from pathlib import Path
 from pprint import pformat
+import re
 
 logger = logging.getLogger(__name__)
+# https://www.zotero.org/groups/2533/items/HQBKCQEW
+# https://www.zotero.org/groups/2533/pleiades/items/itemKey/UMFZH98D
+rx_zot_valid = re.compile(
+    r"^https://www\.zotero\.org/groups/(2533|pleiades|2533/pleiades)/(items|items/itemKey)/[A-Z0-9]{8}/?$"
+)
 
 
 class PleiadesPlace:
@@ -161,6 +167,17 @@ class PleiadesPlace:
             for obj_id, ref in self.references
             if not ref["bibliographicURI"].startswith("https://www.zotero.org/")
         ]
+
+    @property
+    def references_with_invalid_zotero(self) -> list:
+        """Return a list of references that have an invalid Zotero URI in the bibliographicURI field"""
+        zotrefs = self.references_with_zotero
+        invalid = [
+            (obj_id, ref)
+            for obj_id, ref in zotrefs
+            if rx_zot_valid.match(ref["bibliographicURI"]) is None
+        ]
+        return invalid
 
     @property
     def rough(self) -> bool:

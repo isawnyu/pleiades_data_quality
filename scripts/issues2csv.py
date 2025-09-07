@@ -67,6 +67,10 @@ def main(**kwargs):
             these_fieldnames.append("names")
         elif k == "bad_osm_way":
             these_fieldnames.append("osm_way_ids")
+        elif k == "references_without_zotero":
+            these_fieldnames.append("without_zotero")
+        elif k == "references_with_invalid_zotero":
+            these_fieldnames.append("invalid_zotero")
         where = ipath.parent / f"{k}.csv"
         rows = list()
         for pid in v:
@@ -91,6 +95,22 @@ def main(**kwargs):
                 )
             elif k == "bad_osm_way":
                 rows[-1]["osm_way_ids"] = "|".join(issues["places"][pid]["osm_way_ids"])
+            elif k == "references_without_zotero":
+                rows[-1]["without_zotero"] = "|".join(
+                    [
+                        f"{r[0]}:{r[1]['accessURI']}>{r[1]['citationDetail']}>{r[1]['formattedCitation']}"
+                        for r in issues["places"][pid]["references"]["without_zotero"]
+                    ]
+                )
+            elif k == "references_with_invalid_zotero":
+                rows[-1]["invalid_zotero"] = "|".join(
+                    [
+                        f"{r[0]}:{r[1]['bibliographicURI']}>{r[1]['shortTitle']}>{r[1]['formattedCitation']}"
+                        for r in issues["places"][pid]["references"][
+                            "with_invalid_zotero"
+                        ]
+                    ]
+                )
         rows = sorted(rows, key=lambda x: int(x["pid"]))
         with open(where, "w", newline="", encoding="utf-8") as fp:
             logger.debug(f"these_fieldnames: {pformat(these_fieldnames, indent=4)}")
