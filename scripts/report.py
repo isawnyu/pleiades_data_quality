@@ -57,6 +57,8 @@ issues = {
     "missing_modern_name": set(),
     "references_without_zotero": set(),
     "references_with_invalid_zotero": set(),
+    "empty_description": set(),
+    "inadequate_description": set(),
 }
 accuracy_details = dict()
 bad_osm_way_details = dict()
@@ -73,6 +75,7 @@ DEPRECATED_PLACE_TYPES = {
     "wall",
 }  # these are term IDs, not the full terms (e.g. "church" here meant "church or monastery" on BAtlas map)
 names_details = dict()
+place_description_details = dict()
 place_type_details = dict()
 references_details = dict()
 problems = dict()
@@ -180,6 +183,29 @@ def evaluate(p):
             d = references_details[pid]
         d["with_invalid_zotero"] = p.references_with_invalid_zotero
 
+    # empty / pro-forma / legacy descriptions
+    if p.description.strip() == "":
+        issues["empty_description"].add(pid)
+        problem = True
+    elif (
+        "cited: BAtlas" in p.description
+        or p.description.strip().lower() == "a place from the tavo index"
+    ):
+        issues["inadequate_description"].add(pid)
+        problem = True
+    if pid in issues["empty_description"] or pid in issues["inadequate_description"]:
+        try:
+            place_description_details[pid]
+        except KeyError:
+            place_description_details[pid] = p.description
+        else:
+            if place_description_details[pid] != p.description:
+                raise RuntimeError(
+                    "Multiple different descriptions for same place ({pid})?: '{place_description_details[pid]}' vs. '{p.description}'"
+                )
+            else:
+                place_description_details[pid] = p.description
+
     # store problem place data
     if problem:
         problems[pid] = p
@@ -218,6 +244,9 @@ def main(**kwargs):
         issues["places"][pid]["osm_way_ids"] = v
     for pid, v in references_details.items():
         issues["places"][pid]["references"] = v
+    for pid, v in place_description_details.items():
+        issues["places"][pid]["description"] = v
+
     logger.info(f"Total problem place count: {len(problems)}")
     summary["problem_count"] = len(problems)
     issues["summary"] = summary
@@ -237,6 +266,8 @@ def main(**kwargs):
         f"{len(issues['missing_modern_name']):,} places that have no assigned 'modern name'.",
         f"{len(issues['references_without_zotero']):,} places that have at least one reference without a Zotero URI.",
         f"{len(issues['references_with_invalid_zotero']):,} places that have at least one reference with an invalid Zotero URI.",
+        f"{len(issues['empty_description']):,} places with an empty description.",
+        f"{len(issues['inadequate_description']):,} places whose description is clearly inadequate (i.e., 'cited: BAtlas' or 'A place from the TAVO Index').",
     ]
     print(" ".join(msg[1:]))
     print("\n")

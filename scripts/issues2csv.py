@@ -71,6 +71,8 @@ def main(**kwargs):
             these_fieldnames.append("without_zotero")
         elif k == "references_with_invalid_zotero":
             these_fieldnames.append("invalid_zotero")
+        elif k in ["empty_description", "inadequate_description"]:
+            these_fieldnames.append("description")
         where = ipath.parent / f"{k}.csv"
         rows = list()
         for pid in v:
@@ -111,6 +113,14 @@ def main(**kwargs):
                         ]
                     ]
                 )
+            elif k in ["empty_description", "inadequate_description"]:
+                # print("boop")
+                # print(type(issues["places"][pid]["description"]))
+                # print(f"'{issues["places"][pid]["description"]}'")
+                # print("bop")
+                # exit()
+                rows[-1]["description"] = issues["places"][pid]["description"]
+
         rows = sorted(rows, key=lambda x: int(x["pid"]))
         with open(where, "w", newline="", encoding="utf-8") as fp:
             logger.debug(f"these_fieldnames: {pformat(these_fieldnames, indent=4)}")

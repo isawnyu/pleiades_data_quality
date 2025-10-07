@@ -80,6 +80,11 @@ class PleiadesPlace:
         ]
 
     @property
+    def description(self) -> str:
+        """Return the description of the place"""
+        return self.data.get("description", "")
+
+    @property
     def feature_count(self) -> int:
         """Return the number of GEOJSON features for the place"""
         return len([f for f in self.data["features"]])
