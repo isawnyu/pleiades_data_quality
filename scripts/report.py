@@ -157,7 +157,7 @@ def evaluate(p):
         problem = True
 
     # missing modern name
-    if p.name_count > 0 and not p.names_modern:
+    if p.name_count > 0 and not p.names_modern and not p.unlocated:
         issues["missing_modern_name"].add(pid)
         problem = True
 
