@@ -157,7 +157,12 @@ def evaluate(p):
         problem = True
 
     # missing modern name
-    if p.name_count > 0 and not p.names_modern and not p.unlocated:
+    if (
+        p.name_count > 0
+        and not p.names_modern
+        and not p.unlocated
+        and p.place_types != {"people"}
+    ):
         issues["missing_modern_name"].add(pid)
         problem = True
 
