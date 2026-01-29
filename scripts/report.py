@@ -275,15 +275,19 @@ def main(**kwargs):
         f"{len(issues['inadequate_description']):,} places whose description is clearly inadequate (i.e., 'cited: BAtlas' or 'A place from the TAVO Index').",
     ]
     print(" ".join(msg[1:]))
-    print("\n")
-    print("-" * 78)
-    print("\n")
-    print("\n".join([(s, f"- {s}")[i > 0] for i, s in enumerate(msg)]))
+    # print("\n")
+    # print("-" * 78)
+    # print("\n")
+    # print("\n".join([(s, f"- {s}")[i > 0] for i, s in enumerate(msg)]))
 
 
 if __name__ == "__main__":
-    main(
-        **configure_commandline(
-            OPTIONAL_ARGUMENTS, POSITIONAL_ARGUMENTS, DEFAULT_LOG_LEVEL
+    try:
+        main(
+            **configure_commandline(
+                OPTIONAL_ARGUMENTS, POSITIONAL_ARGUMENTS, DEFAULT_LOG_LEVEL
+            )
         )
-    )
+    except Exception as err:
+        logger.fatal(err)
+        exit(1)
