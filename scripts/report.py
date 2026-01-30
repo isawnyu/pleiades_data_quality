@@ -59,6 +59,7 @@ issues = {
     "references_with_invalid_zotero": set(),
     "empty_description": set(),
     "inadequate_description": set(),
+    "unelaborated_places": set(),
 }
 accuracy_details = dict()
 bad_osm_way_details = dict()
@@ -211,6 +212,27 @@ def evaluate(p):
             else:
                 place_description_details[pid] = p.description
 
+    # likely complex archaeological place from BAtlas, but no partative connected places (monuments/areas/excavations)
+    if p.provenance.startswith("Barrington Atlas"):
+        if p.place_types == {"settlement"}:
+            punt = False
+            for unwanted in ["?", "(...)", "*", "[", "’"]:
+                if unwanted in p.title:
+                    punt = True
+                    break
+            if not punt:
+                if p.count_locations_filtered(provenance="DARMC OBJECTID:") > 0 and (
+                    p.count_locations_filtered(provenance="DARMC OBJECTID:")
+                    + p.count_locations_filtered(
+                        precision="rough", provenance="Barrington Atlas:"
+                    )
+                    == p.count_locations()
+                ):
+                    if p.count_names_filtered() >= 1:
+                        if p.count_connections_inbound() == 0:
+                            issues["unelaborated_places"].add(pid)
+                            problem = True
+
     # store problem place data
     if problem:
         problems[pid] = p
@@ -273,6 +295,7 @@ def main(**kwargs):
         f"{len(issues['references_with_invalid_zotero']):,} places that have at least one reference with an invalid Zotero URI.",
         f"{len(issues['empty_description']):,} places with an empty description.",
         f"{len(issues['inadequate_description']):,} places whose description is clearly inadequate (i.e., 'cited: BAtlas' or 'A place from the TAVO Index').",
+        f"{len(issues['unelaborated_places']):,} places from BAtlas that could have complex archaeological remains, but so far lack any connected places (monuments/areas/excavations).",
     ]
     print(" ".join(msg[1:]))
     # print("\n")
@@ -289,5 +312,6 @@ if __name__ == "__main__":
             )
         )
     except Exception as err:
-        logger.fatal(err)
+        logger.fatal(str(err))
+        raise err
         exit(1)

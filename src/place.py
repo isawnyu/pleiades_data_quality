@@ -94,6 +94,54 @@ class PleiadesPlace:
         """Return the Pleiades ID for the place"""
         return self.data["id"]
 
+    def count_locations(self) -> int:
+        """Return the number of locations for the place"""
+        return len(self.data["locations"])
+
+    def count_locations_filtered(
+        self,
+        precision: str = "precise",
+        provenance: str = "DARMC OBJECTID:",
+        certainty: str = "certain",
+    ) -> int:
+        """Return the number of locations for the place filtered by location precision and provenance"""
+        features = self.data["features"]
+        locations = self.data["locations"]
+        if len(features) != len(locations):
+            raise RuntimeError(
+                f"Number of features does not match number of locations for place with pid {self.id}"
+            )
+        count = 0
+        for i, f in enumerate(features):
+            loc = locations[i]
+            if (
+                f["properties"]["location_precision"] == precision
+                and loc["provenance"].startswith(provenance)
+                and loc["associationCertainty"] == certainty
+            ):
+                count += 1
+        return count
+
+    def count_names_filtered(
+        self, name_type: str = "geographic", certainty: str = "certain"
+    ) -> int:
+        """Return the number of names for the place filtered by name type"""
+        return len(
+            [
+                n
+                for n in self.data["names"]
+                if n["nameType"] == name_type and n["associationCertainty"] == certainty
+            ]
+        )
+
+    def count_connections_inbound(self) -> int:
+        """Return the number of connections for the place filtered by connection direction"""
+        # steps
+        # 1. get the connectsWith list and for each other place listed therein, get the connections that come back to this place
+        # 2. filter by connection type and certainty
+        # count them up and return the result
+        return len(self.data.get("connectsWith", []))
+
     @property
     def names(self) -> list:
         """Return the list of names for the place"""
@@ -129,6 +177,11 @@ class PleiadesPlace:
         """Return True if all features have 'precise' location precision"""
         vals = {f["properties"]["location_precision"] for f in self.data["features"]}
         return vals == {"precise"}
+
+    @property
+    def provenance(self) -> str:
+        """Return the provenance value for the place as a string"""
+        return self.data["provenance"]
 
     @property
     def references(self) -> list:
